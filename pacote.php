@@ -2,14 +2,17 @@
 session_start();
 include_once('conexao.php');
 
-$action = $_POST['action']; //Identifica se é edição ou novo cadastro
+$action = ($_POST['action'] ? $_POST['action'] : "new"); //Identifica se é edição ou novo cadastro
 
 if ($_GET['action'] == "edit") { //Se for edição
 
-  $sql = 'SELECT * FROM cadastro WHERE id =' . $_GET['id'];
+  $sql = 'SELECT * FROM pacote WHERE cod =' . $_GET['cod'];
 
   $consulta = $pdo->query($sql);
   $pacote = $consulta->fetch(PDO::FETCH_ASSOC);
+} else {
+  $sql = 'SELECT * FROM categoria';
+  $consulta = $pdo->query($sql);
 }
 
 ?>
@@ -33,7 +36,7 @@ if ($_GET['action'] == "edit") { //Se for edição
       <?php echo ($action == "edit" ? "Edição" : "Cadastro") ?> De Pacote
     </h2>
     <br><br>
-    <form action="acoes_pacote.php">
+    <form action="acoes_pacote?action=<?php echo $action ?>" method="POST" enctype="multipart/form-data">
       <div class="form-group row">
         <label for="staticEmail" class="col-sm-2 col-form-label">Nome do Pacote:</label>
         <div class="col-sm-10">
@@ -50,10 +53,10 @@ if ($_GET['action'] == "edit") { //Se for edição
         <label for="staticEmail" class="col-sm-2 col-form-label">Categoria:</label>
         <div class="col-sm-10">
           <select class="form-control" required name="categoria" id="categoria">
-            <option value=""></option>
+            <option value="">Selecione uma categoria</option>
             <?php
-            while ($rows = mysqli_fetch_assoc($resultado_mesas)) { ?>
-              <option value="<?php echo $rows['numero_mesa']; ?>"><?php echo $rows['numero_mesa']; ?></option>
+            while ($row = $consulta->fetch(PDO::FETCH_ASSOC)) { ?>
+              <option value="<?php echo $row['cod']; ?>"><?php echo $row['descricao']; ?></option>
             <?php } ?>
           </select>
         </div>
@@ -61,13 +64,13 @@ if ($_GET['action'] == "edit") { //Se for edição
       <div class="form-group row">
         <label for="staticEmail" class="col-sm-2 col-form-label">Valor:</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" required name="descricao" id="descricao" value="<?php echo $pacote['valor'] ?>">
+          <input type="text" class="form-control" required name="valor" id="valor" value="<?php echo $pacote['valor'] ?>">
         </div>
       </div><br>
       <div class="form-group row">
         <label for="staticEmail" class="col-sm-2 col-form-label">Foto:</label>
         <div class="col-sm-10">
-          <input type="file" class="form-control" required name="foto" id="foto" value="<?php echo $pacote['foto'] ?>">
+          <input type="file" class="form-control" required name="foto" id="foto" value="<?php echo base64_encode($pacote['foto']) ?>">
         </div>
       </div><br>
 

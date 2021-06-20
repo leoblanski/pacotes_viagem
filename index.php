@@ -2,6 +2,27 @@
 
 include_once('conexao.php');
 
+if ($_GET['cod']) {
+	$sql = "SELECT c.descricao as categoria_desc, p.* FROM pacote p
+				JOIN categoria c ON (c.cod = p.fk_categoria_cod)
+				WHERE p.fk_categoria_cod = " . $_GET['cod'];
+
+	$categoria_query = $pdo->query($sql);
+	$categoria = $categoria_query->fetch(PDO::FETCH_ASSOC);
+
+	$categoria_selecionada = $categoria['categoria_desc'];
+
+	//Verifica se a categoria existe retorno
+	if (!$categoria_selecionada) { //Se nulo, redireciona pra tela principal sem filtros, avisando o usuário que não retornou registros
+		echo '<script>alert("Não foram encontrados registros para a Categoria informada, você será redirecionado a listagem inicial!!");</script>';
+		echo '<script>window.location="index.php";</script>';
+	}
+} else {
+	$sql = "SELECT c.descricao as categoria_desc, p.* FROM pacote p
+	JOIN categoria c ON (c.cod = p.fk_categoria_cod)";
+}
+
+$consulta = $pdo->query($sql);
 ?>
 
 
@@ -20,103 +41,43 @@ include_once('conexao.php');
 
 <body>
 	<?php include_once('menu.php'); ?>
+
 	<br><br><br>
-	<center>
-		<!-- div para mostrar o título da página principal -->
-		<div class="tituloDaPrincipal">JFK Pacotes Turísticos</div><br>
+	<div class="container">
+		<center>
+			<h1>JFK Pacotes de Viagens</h1>
+			<h5>Veja abaixo nossos pacotes disponíveis.</h5>
 
-		<!-- parágrafo de texto -->
-		<p>Veja todos os nossos pacotes disponíveis:</p>
+			<?php if ($_GET['cod']) { ?>
+				<h5> Você aplicou um filtro pela categoria:
+					<strong>
+						<?php echo $categoria_selecionada; ?>
+					</strong>
+				<?php } ?>
+				</h5>
 
-		<!-- div que é utilizada para centralizar as divs dos tipos de pacotes -->
-		<div class="caixaGeralTipoDePacote">
+				<br><br>
+		</center>
 
-			<!-- divs com os tipos de pacotes -->
+		<div class="row">
+			<?php while ($row = $consulta->fetch(PDO::FETCH_ASSOC)) { ?>
+				<div class="col-sm-4">
+					<center>
+						<strong><?php echo $row['nome']; ?></strong> <br>
+						<strong>Categoria: </strong> <?php echo $row['categoria_desc']; ?><br><br>
+						<img width="300" height="300" src="data:image/jpeg;base64,<?= base64_encode($row['foto']) ?>" />
 
-			<!-- pacote 1 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteBusinnes.jpg">
-				<div class="tituloDoPacote"> Pacote Business</div>
-				<a href="pacote1.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 2 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteAventuras.jpg">
-				<div class="tituloDoPacote"> Pacote Aventuras</div>
-				<a href="pacote2.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 3 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacotePraia.jpg">
-				<div class="tituloDoPacote"> Pacote Praia</div>
-				<a href="pacote3.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 4 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteRelaxamento.jpg">
-				<div class="tituloDoPacote"> Pacote Relaxamento</div>
-				<a href="pacote4.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 5 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteFamilia.jpg">
-				<div class="tituloDoPacote"> Pacote Família</div>
-				<a href="pacote5.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 6 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteFunny.jpg">
-				<div class="tituloDoPacote"> Pacote Funny</div>
-				<a href="pacote6.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 7 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteNatureza.jpg">
-				<div class="tituloDoPacote"> Pacote Natureza</div>
-				<a href="pacote7.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 8 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteLuxo.jpg">
-				<div class="tituloDoPacote"> Pacote Luxo</div>
-				<a href="pacote8.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
-			<!-- pacote 9 -->
-			<div class="caixaTipoDePacote">
-				<img class="thumbTipoDoPacote" src="imagens/pacoteGold.jpg">
-				<div class="tituloDoPacote"> Pacote Gold</div>
-				<a href="pacote9.html">
-					<div class="botaoDetalhes">Detalhes</div>
-				</a>
-			</div>
-
+						<br><br>
+						<a class="btn btn-primary" href="pacote_detalhes.php?cod=<?php echo $row['cod']; ?>">Ver detalhes</a>
+						<?php if ($_SESSION['tipo_login'] == "Administrador") { ?>
+							<a class="btn btn-danger" href="pacote.php?action=edit&cod=<?php echo $row['cod']; ?>">Editar Pacote</a>
+						<?php } ?>
+					</center>
+					<br>
+				</div>
+			<?php } ?>
 		</div>
-
-	</center>
+	</div>
 
 </body>
 

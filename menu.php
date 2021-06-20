@@ -1,6 +1,10 @@
 <?php
 session_start();
 include_once('conexao.php');
+
+$sql = "SELECT * FROM categoria";
+$categorias = $pdo->query($sql);
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -20,7 +24,7 @@ include_once('conexao.php');
       <a href="#" title="Hide navigation">Ocultar Navegação</a>
       <ul>
         <li>
-          <div style="margin-top:8px; font-size:12px;">
+          <div style="margin-top:12px; font-size:12px;">
             Olá
             <strong>
               <?php echo ($_SESSION['login']); ?>
@@ -29,12 +33,18 @@ include_once('conexao.php');
             <?php echo ($_SESSION['tipo_login']); ?>
           </div>
         </li>
-        <li><a href="home.php">Início</a></li>
+        <li><a href="index.php">Início</a></li>
         <li>
-          <a href="cadastro_categoria.php">Cadastro de Categoria</a>
+          <a href="listagem_categoria.php">Categoria</a>
+          <ul>
+            <li><a href="index.php">Todas</a></li>
+            <?php while ($row = $categorias->fetch(PDO::FETCH_ASSOC)) { ?>
+              <li><a href="index.php?cod=<?php echo $row['cod']; ?>"><?php echo $row['descricao'] ?></a></li>
+            <?php } ?>
+          </ul>
         </li>
         <li>
-          <a href="pacote.php">Cadastro de Pacotes</a>
+          <a href="pacote.php">Pacotes</a>
         </li>
         <li>
           <a href="logout.php">Sair</a>
